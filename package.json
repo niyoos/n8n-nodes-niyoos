@@ -1,0 +1,65 @@
+{
+	"name": "n8n-nodes-niyoos",
+	"version": "1.0.0",
+	"description": "Govern the AI agents in your n8n workflows with Niyoos: a kill switch, spending limits and a tamper-evident audit log for every model call.",
+	"license": "MIT",
+	"homepage": "https://niyoos.com",
+	"keywords": [
+		"n8n-community-node-package",
+		"n8n",
+		"niyoos",
+		"ai governance",
+		"llm",
+		"audit",
+		"chat model"
+	],
+	"author": {
+		"name": "Niyoos",
+		"email": "support@niyoos.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/niyoos/n8n-nodes-niyoos.git"
+	},
+	"bugs": {
+		"url": "https://github.com/niyoos/n8n-nodes-niyoos/issues"
+	},
+	"scripts": {
+		"build": "n8n-node build",
+		"build:watch": "tsc --watch",
+		"dev": "n8n-node dev",
+		"lint": "n8n-node lint",
+		"lint:fix": "n8n-node lint --fix",
+		"release": "n8n-node release",
+		"prepublishOnly": "n8n-node prerelease",
+		"test": "n8n-node build && node --test \"test/*.test.mjs\""
+	},
+	"files": [
+		"dist"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"aiNodeSdkVersion": 1,
+		"strict": true,
+		"credentials": [
+			"dist/credentials/NiyoosApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/NiyoosChatModel/NiyoosChatModel.node.js",
+			"dist/nodes/Niyoos/Niyoos.node.js"
+		]
+	},
+	"devDependencies": {
+		"@n8n/ai-node-sdk": "0.7.0",
+		"@n8n/node-cli": "0.53.2",
+		"eslint": "9.32.0",
+		"n8n-workflow": "2.16.0",
+		"prettier": "3.6.2",
+		"release-it": "^21.1.0",
+		"typescript": "5.9.2"
+	},
+	"peerDependencies": {
+		"@n8n/ai-node-sdk": ">=0.7.0",
+		"n8n-workflow": "*"
+	}
+}
