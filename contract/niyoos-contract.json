@@ -1,0 +1,77 @@
+{
+  "$comment": "The Niyoos wire values the n8n node (n8n-nodes-niyoos, its own public repository) depends on. Source of truth is the backend; backend/test/unit/n8n-node-contract.test.ts fails when this file and the backend disagree. The node repository carries a byte-identical copy at contract/niyoos-contract.json. Change both together.",
+  "contractVersion": 1,
+  "errorCodes": {
+    "CALLER_ENDPOINT_MALFORMED": {
+      "status": 400
+    },
+    "CALLER_KEY_INVALID": {
+      "status": 401
+    },
+    "CALLER_REQUEST_REJECTED": {
+      "status": 400
+    },
+    "CONFIG_CREDENTIAL_DISABLED": {
+      "status": 403
+    },
+    "CONFIG_CREDENTIAL_REVOKED": {
+      "status": 403
+    },
+    "CONFIG_ENDPOINT_BLOCKED": {
+      "status": 400
+    },
+    "CONFIG_PROVIDER_KEY_MISSING": {
+      "status": 400
+    },
+    "CONFIG_PROVIDER_KEY_REJECTED": {
+      "status": 403
+    },
+    "CONFIG_PROVIDER_MISCONFIGURED": {
+      "status": 403
+    },
+    "CONFIG_PROVIDER_QUOTA_EXHAUSTED": {
+      "status": 402,
+      "noRetry": true
+    },
+    "GATEWAY_CREDENTIAL_THROTTLED": {
+      "status": 429
+    },
+    "GATEWAY_INTERNAL_ERROR": {
+      "status": 500
+    },
+    "GATEWAY_RATE_LIMIT": {
+      "status": 429
+    },
+    "GATEWAY_RESPONSE_TOO_LARGE": {
+      "status": 502
+    },
+    "GATEWAY_TIMEOUT": {
+      "status": 504
+    },
+    "POLICY_AGENT_DISABLED": {
+      "status": 403
+    },
+    "POLICY_COST_LIMIT_REACHED": {
+      "status": 429
+    },
+    "PROVIDER_RATE_LIMITED": {
+      "status": 429
+    },
+    "PROVIDER_UNAVAILABLE": {
+      "status": 502
+    },
+    "UPSTREAM_UNREACHABLE": {
+      "status": 502
+    }
+  },
+  "clientHeader": {
+    "name": "x-niyoos-client",
+    "value": "n8n"
+  },
+  "runContext": {
+    "runIdHeader": "x-niyoos-run-id",
+    "stepHeader": "x-niyoos-step",
+    "parentRunIdHeader": "x-niyoos-parent-run-id",
+    "runIdPattern": "^[A-Za-z0-9_-]{8,64}$"
+  }
+}
