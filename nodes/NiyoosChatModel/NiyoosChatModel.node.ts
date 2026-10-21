@@ -107,7 +107,8 @@ export class NiyoosChatModel implements INodeType {
 						name: 'maxRetries',
 						type: 'number',
 						default: 2,
-						description: 'Maximum number of times to retry a failing request',
+						description:
+							'Maximum number of times to retry a failing request. Current n8n versions do not retry AI model calls, so this setting currently has no effect.',
 						typeOptions: { minValue: 0 },
 					},
 					{

@@ -18,6 +18,10 @@ On older n8n, keep using 0.1.x.
   the model client.
 - Unchanged, so existing workflows keep working: the node (`Niyoos Chat Model`), its
   parameters, and the credential (`Niyoos API`) and its fields.
+- **Maximum Retries** now says what is true today: current n8n does not retry AI model
+  calls (measured on n8n 2.16.0 and 2.44.4), so the option has no effect. It is kept so
+  existing workflows load and so it works if n8n restores retries.
+- The README states the n8n 2.16 requirement at the top, with how to stay on 0.1.x.
 
 ## 0.1.0
 

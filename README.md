@@ -1,12 +1,14 @@
 # n8n-nodes-niyoos
 
-<!-- DRAFT COPY (intro and node descriptions) — awaiting approval before publishing. -->
+> **Requires n8n 2.16 or newer.** On an older n8n (any 1.x, or 2.x before 2.16), install
+> **`n8n-nodes-niyoos@0.1.x`** instead — this version will not run there. See
+> [Compatibility](#compatibility).
 
 **Put your n8n AI agents under governance.** [Niyoos](https://niyoos.com) sits between your
 workflows and your AI providers. Every model call your AI Agent makes goes through Niyoos,
 which can stop an agent instantly with a kill switch, hold it to a spending limit, and seal a
-record of each call — cost, model and timing, never the prompt text — in a tamper-evident audit
-log. Your provider keys stay encrypted inside Niyoos; n8n only ever holds a per-agent Niyoos key.
+record of each call — its cost, model, timing and outcome — in a tamper-evident audit log.
+Your provider keys stay encrypted inside Niyoos; n8n only ever holds a per-agent Niyoos key.
 
 This package gives n8n two nodes:
 
@@ -65,7 +67,12 @@ retry is left to happen and the explanation is shown only once the call has fail
 
 - **n8n 2.16 or newer** for version 1.x of this package. On an older n8n the chat model says so
   when the workflow runs.
-- On n8n 1.x, or n8n 2.x before 2.16, install **`n8n-nodes-niyoos@0.1.x`**.
+- **On n8n 1.x, or n8n 2.x before 2.16, install `n8n-nodes-niyoos@0.1.x`.** In n8n's community
+  nodes installer, enter the package name with the version, e.g. `n8n-nodes-niyoos@0.1.0`, and do
+  not update it past 0.1.x until you have upgraded n8n.
+- **Retries:** current n8n versions do not retry a failed AI model call, so the chat model's
+  *Maximum Retries* option has no effect today. It is kept so the setting works if n8n restores
+  retries.
 - No runtime dependencies: n8n supplies the model client.
 
 ## Development
