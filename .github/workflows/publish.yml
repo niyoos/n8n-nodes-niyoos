@@ -1,0 +1,124 @@
+# Publishes n8n-nodes-niyoos to npm WITH PROVENANCE, from a version tag only.
+#
+# n8n requires community nodes to be published from GitHub Actions with an npm
+# provenance statement (mandatory since 1 May 2026), so a package published from
+# a laptop can never be verified. Provenance also lets anyone check that what npm
+# serves was built from this repository at the tagged commit.
+#
+# What this workflow refuses, and why:
+#   - a tag whose version disagrees with package.json (the tag would lie about
+#     what was published);
+#   - a version npm already serves (an npm unpublish is only possible for 72
+#     hours, so a mistaken re-publish attempt is stopped before it starts);
+#   - a release whose test suite is red.
+# And after publishing it READS THE ATTESTATION BACK from the registry rather
+# than trusting the publish step's exit code: `n8n-node release` can exit 0 on a
+# failed child process, and a publish that silently produced no provenance would
+# otherwise look exactly like a good one.
+#
+# ─── ONE-TIME SETUP (by a maintainer, on npmjs.com) ────────────────────────────
+#   Trusted Publishing (recommended — no token stored anywhere):
+#     npmjs.com → package n8n-nodes-niyoos → Settings → Trusted Publisher →
+#     GitHub Actions: owner `niyoos`, repository `n8n-nodes-niyoos`,
+#     workflow `publish.yml`, environment blank.
+#   Fallback: an npm granular token scoped to this package, saved as the
+#   repository secret NPM_TOKEN.
+#
+# ─── TO RELEASE ────────────────────────────────────────────────────────────────
+#   Set "version" in package.json, commit, then push a tag `v<version>`
+#   (e.g. v1.0.0). Nothing else triggers this workflow.
+
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions: {}
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish to npm with provenance
+    runs-on: ubuntu-latest
+    permissions:
+      # Mints the OIDC token npm uses for trusted publishing and for signing
+      # the provenance statement.
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Make sure npm supports trusted publishing (>= 11.5.1)
+        run: |
+          npm --version
+          if ! node -e 'const [a,b,c]=process.argv[1].split(".").map(Number);process.exit(a>11||(a===11&&(b>5||(b===5&&c>=1)))?0:1)' "$(npm --version)"; then
+            npm install -g npm@11
+            npm --version
+          fi
+
+      - name: Refuse a tag that disagrees with package.json
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          echo "tag=$tag package.json=$pkg"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $pkg."
+            exit 1
+          fi
+          echo "VERSION=$pkg" >> "$GITHUB_ENV"
+
+      - name: Refuse a version npm already serves
+        run: |
+          served="$(npm view "n8n-nodes-niyoos@$VERSION" version 2>/dev/null || true)"
+          if [ -n "$served" ]; then
+            echo "::error::n8n-nodes-niyoos@$VERSION is already on npm. Bump the version."
+            exit 1
+          fi
+          echo "n8n-nodes-niyoos@$VERSION is not on npm yet."
+
+      - name: Install
+        run: npm ci
+
+      - name: Test (builds, then tests the built package)
+        run: npm test
+
+      - name: Show exactly what will be published
+        run: npm pack --dry-run
+
+      - name: Publish (n8n-node release — lint, build, npm publish with provenance)
+        run: |
+          [ -n "$NPM_TOKEN" ] && npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+          npm run release
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Read the provenance attestation back from npm
+        run: |
+          for i in $(seq 1 12); do
+            pt="$(npm view "n8n-nodes-niyoos@$VERSION" dist.attestations.provenance.predicateType 2>/dev/null || true)"
+            if [ "$pt" = "https://slsa.dev/provenance/v1" ]; then
+              echo "Published n8n-nodes-niyoos@$VERSION with provenance ($pt)."
+              exit 0
+            fi
+            echo "attempt $i: not visible yet (got: '${pt}')"; sleep 10
+          done
+          echo "::error::n8n-nodes-niyoos@$VERSION has no provenance attestation on npm. Do NOT submit it for verification."
+          exit 1
+
+      - name: Run n8n's community-package scanner on what was published
+        run: bash scripts/scan-published.sh "n8n-nodes-niyoos@$VERSION"

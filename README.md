@@ -58,8 +58,8 @@ When Niyoos refuses a call, the node tells you why and what to change — for ex
 | The agent reached its spending limit | *This Niyoos agent has reached the spending limit set for it, so Niyoos stopped the request before any provider was called. …* |
 | The provider rejected the stored key | *The upstream provider rejected the provider key configured for this Niyoos agent. …* |
 
-Every refusal Niyoos can return has its own explanation, shown once the call has failed for
-good — a call n8n is still going to retry is left to retry.
+Every refusal Niyoos can return has its own explanation. If n8n is going to retry a call, the
+retry is left to happen and the explanation is shown only once the call has failed for good.
 
 ## Compatibility
 

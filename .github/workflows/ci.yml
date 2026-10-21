@@ -1,0 +1,60 @@
+# Lint, build and test on every push and pull request; and, separately, run
+# n8n's community-package scanner against what is PUBLISHED on npm.
+#
+# The scanner job judges the scanner by its OUTPUT (scripts/scan-published.sh):
+# the scanner exits 0 even when it reports a failure. It runs on Linux because
+# it cannot extract the attested source on Windows.
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Weekly: catches a scanner rule change n8n makes after we published.
+    - cron: '17 6 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['22', '24']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+      - name: Test (builds, then tests the built package)
+        run: npm test
+
+  scan-published:
+    # Only meaningful once a version is on npm; on push/PR it would scan the
+    # previous release, so it runs on demand and weekly.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Scan the latest published n8n-nodes-niyoos
+        run: bash scripts/scan-published.sh n8n-nodes-niyoos
